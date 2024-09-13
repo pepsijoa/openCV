@@ -12,73 +12,62 @@ using namespace std;
 void grayScale();
 void knn();
 
-void colorotate(Mat input, float degree, float scaleSize);
-void rotate(Mat input, float degree, float scaleSize);
+void colorotate(Mat input, float degree, float scaleXSize, float scaleYSize);
+void rotate(Mat input, float degree, float scaleXSize, float scaleYSize);
 
-vector<int> maxCal(Mat input, float radian, float scaleSize);
-pair<int, int> rerot(pair<int, int>point, float degree);
-pair<int, int> rot(pair<int, int>point, float degree);
+vector<int> maxCal(Mat input, float radian, float scaleXSize, float scaleYSize);
+pair<float, float> rerot(pair<int, int>point, float degree);
+pair<float, float> rot(pair<int, int>point, float degree);
 
 int main(void)
 {
 	String path = "C:/Users/woo12/OneDrive/Desktop/cpp/img/";
-	String img = "konkuk.jpg";
+	String img = "axis.bmp";
 	Mat imgColor = imread(path + img, CV_LOAD_IMAGE_COLOR);
 	Mat imgGrey = imread(path + img, CV_LOAD_IMAGE_GRAYSCALE);
 
+	for (int i = 0; i < 360; i++) {
+		colorotate(imgColor, i, 1, 1);
+	}
+	//colorotate(imgColor, 18, 1, 1);
 	
-	/*for (int i = 0; i < 361; i++) {
-		colorotate(imgColor, (float)i);
-		cout << i << endl;
-	}*/
-	// cout << rot({ 1, 0 }, 90.0 * (3.14158) / 180).first << ' ' << rot({1, 0}, 90.0 * (3.14158) / 180).second;
-	colorotate(imgColor, 10, 0.8);
 	return 0;
 	
 }
 
-pair<int,int> rerot(pair<int, int>point, float degree) //intput point (y, x) & output point ( y, x) 
+pair<float,float> rerot(pair<int, int>point, float degree) //intput point (y, x) & output point ( y, x) 
 {
-	// xcos + ysin = x
-	// -xsin + ycos = y
 	pair<int, int>newPoint;
 	newPoint.first =  point.second * (-1) * sin(degree) + point.first * cos(degree);
 	newPoint.second = point.second * cos(degree) + point.first * sin(degree);
 
 	return newPoint;
 }
-pair<int, int> rot(pair<int, int>point, float degree) //intput point (y, x) & output point ( y, x) 
+
+pair<float, float> rot(pair<int, int>point, float degree) //intput point (y, x) & output point ( y, x) 
 {
-	// cos -sin
-	// sin cos
-	// xcos - ysin = x
-	// xsin + ycos = y
-	pair<int, int>newPoint;
+	pair<float, float>newPoint;
 	newPoint.first = point.second * sin(degree) + point.first * cos(degree);
 	newPoint.second = point.second * cos(degree) - point.first * sin(degree);
 	return newPoint;
 }
 
-vector<int> maxCal(Mat input, float radian, float scaleSize)
+vector<int> maxCal(Mat input, float radian, float scaleXSize, float scaleYSize)
 {
-	input.rows *= scaleSize;
-	input.cols *= scaleSize;
+	input.rows *= scaleYSize;
+	input.cols *= scaleXSize;
 
 	pair<int, int> oriedge[4]{ {0,0}, {0, input.cols - 1},{input.rows - 1, 0}, {input.rows - 1, input.cols - 1} };
-	pair<int, int> rotedge[4]{ };
+	pair<float, float> rotedge[4]{ };
 	
 	for (int i = 0; i < 4; i++) {
 		rotedge[i] = rot(oriedge[i], radian);
 	}
 
-	int topX{ rotedge[0].second};
-	int bottomX{ rotedge[0].second };
-	int topY{ rotedge[0].second };
-	int bottomY{ rotedge[0].second };
-
-	/*for (int i = 0; i < 4; i++) {
-		cout << '(' << rotedge[i].first << "," << rotedge[i].second << ')' << endl;
-	}*/
+	int topX{ (int)rotedge[0].second};
+	int bottomX{ (int)rotedge[0].second };
+	int topY{ (int)rotedge[0].second };
+	int bottomY{ (int)rotedge[0].second };
 
 	for (int i = 0; i < 4; i++) {
 		if (topX < rotedge[i].second) topX = rotedge[i].second;
@@ -90,111 +79,32 @@ vector<int> maxCal(Mat input, float radian, float scaleSize)
 	int xsize = topX - bottomX + 1;
 	int ysize = topY - bottomY + 1;
 
-	cout << ysize << " " << xsize << endl;
 	vector<int> size = { ysize, xsize };
+	//cout << xsize << 'X' << ysize << endl;
 	return size;
 
 }
-void rotate(Mat input, float degree, float scaleSize)
+
+void colorotate(Mat input, float degree, float scaleXSize, float scaleYSize)
 {
+
 	int height{ 0 };
 	int width{ 0 };
 	height = input.rows;
 	width = input.cols;
 
-	//float degree;
-	//cin >> degree;
 	float radian = degree * (3.14159) / 180;
 
-	//nsize = { y , x } 
-	vector<int> nsize = maxCal(input, radian, scaleSize);
-	//cout << nsize[0] << nsize[1];
-	Mat newMat(nsize[0], nsize[1], CV_8UC1);
+	vector<int> nsize = maxCal(input, radian, scaleXSize, scaleYSize);
 
-	/*float xratio = nsize[1] / (input.cols + 1);
-	float yratio = nsize[0] / (input.rows + 1);*/
-
-	float ncenh = nsize[0] * 0.5;
-	float ncenw = nsize[1] * 0.5;
-	
-	float cenh = height * 0.5;
-	float cenw = width * 0.5;
-
-	for (int y = 0; y < nsize[0]; y++) 
-	{
-		for (int x = 0; x < nsize[1]; x++)
-		{
-			// resize
-			float posX = x - ncenw;
-			float posY = y - ncenh;
-
-			pair<int, int>ori = rerot({ posY, posX }, radian);
-			ori.first += cenh;
-			ori.second += cenw;
-
-			if (ori.first > 0 && ori.first < height - 1 && ori.second > 0 && ori.second < width - 1) {
-				int x1 = static_cast<int>(ori.second);
-				int y1 = static_cast<int>(ori.first);
-				int x2, y2;
-				if (x1 + 1 >= width) {
-					x2 = width - 1;
-				}
-				else x2 = x1 + 1;
-
-				if (y1 + 1 >= height) {
-					y2 = height - 1;
-				}
-				else y2 = y1 + 1;
-
-				float a = ori.second - x1;
-				float b = ori.first - y1;
-
-
-				newMat.at<uchar>(y, x) = input.at<uchar>(y1, x1) * (1 - a) * (1 - b) +
-					input.at<uchar>(y2, x1) * (1 - a) * b +
-					input.at<uchar>(y1, x2) * (1 - b) * a +
-					input.at<uchar>(y2, x2) * a * b;
-			}
-			
-			
-
-		}
-	}
-
-	cv::imshow("orig", input);
-	cout << degree << endl;
-	cv::imshow("result", newMat);
-	cv::waitKey(0);
-	//imwrite(path + "result.bmp", newMat);
-
-}
-
-void colorotate(Mat input, float degree, float scaleSize)
-{
-	int height{ 0 };
-	int width{ 0 };
-	height = input.rows;
-	width = input.cols;
-
-	//float degree;
-	//cin >> degree;
-	float radian = degree * (3.14159) / 180;
-
-	//nsize = { y , x } 
-	vector<int> nsize = maxCal(input, radian, scaleSize);
-	//cout << nsize[0] << nsize[1];
 	Mat newMat(nsize[0], nsize[1], CV_8UC3);
-
-	/*float xratio = nsize[1] / (input.cols + 1);
-	float yratio = nsize[0] / (input.rows + 1);*/
+	//Mat newMat = Mat::zeros(nsize[0], nsize[1], CV_8UC3);
 
 	float ncenh = nsize[0] * 0.5;
 	float ncenw = nsize[1] * 0.5;
 
 	float cenh = height * 0.5;
 	float cenw = width * 0.5;
-
-	// add for scale size
 
 	for (int y = 0; y < nsize[0]; y++)
 	{
@@ -204,15 +114,13 @@ void colorotate(Mat input, float degree, float scaleSize)
 			float posX = x - ncenw;
 			float posY = y - ncenh;
 
+			pair<float, float>ori = rerot({ posY, posX }, radian);
 
-			pair<int, int>ori = rerot({ posY, posX }, radian);
-
-			ori.first /= scaleSize;
-			ori.second /= scaleSize;
+			ori.first /= scaleYSize;
+			ori.second /= scaleXSize;
 
 			ori.first += cenh;
 			ori.second += cenw;
-			
 
 			if (ori.first > 0 && ori.first < height - 1 && ori.second > 0 && ori.second < width - 1) {
 				int x1 = 0;
@@ -243,7 +151,83 @@ void colorotate(Mat input, float degree, float scaleSize)
 						input.at<Vec3b>(y2, x1)[i] * (1 - a) * b +
 						input.at<Vec3b>(y1, x2)[i] * (1 - b) * a +
 						input.at<Vec3b>(y2, x2)[i] * a * b;
+					
+					
+					
+					//cout << '('<< x << ',' << y << ')' << '=' << newMat.at<Vec3b>(y, x)[i] << endl;
 				}
+				
+			}
+		}
+	}
+
+	// 
+	cv::imshow((string)to_string(degree) + "result", newMat);
+	cv::waitKey(0);
+	cv::imwrite("C:/Users/woo12/OneDrive/Desktop/cpp/img/result"+
+		(String)to_string(degree)+(String)to_string(scaleYSize)+(String)to_string(scaleXSize)+
+			"2.bmp", newMat);
+}
+
+void rotate(Mat input, float degree, float scaleXSize, float scaleYSize)
+{
+	int height{ 0 };
+	int width{ 0 };
+	height = input.rows;
+	width = input.cols;
+
+	//float degree;
+	//cin >> degree;
+	float radian = degree * (3.14159) / 180;
+
+	//nsize = { y , x } 
+	vector<int> nsize = maxCal(input, radian, scaleXSize, scaleYSize);
+	//cout << nsize[0] << nsize[1];
+	Mat newMat(nsize[0], nsize[1], CV_8UC1);
+
+	/*float xratio = nsize[1] / (input.cols + 1);
+	float yratio = nsize[0] / (input.rows + 1);*/
+
+	float ncenh = nsize[0] * 0.5;
+	float ncenw = nsize[1] * 0.5;
+
+	float cenh = height * 0.5;
+	float cenw = width * 0.5;
+
+	for (int y = 0; y < nsize[0]; y++)
+	{
+		for (int x = 0; x < nsize[1]; x++)
+		{
+			// resize
+			float posX = x - ncenw;
+			float posY = y - ncenh;
+
+			pair<float, float>ori = rerot({ posY, posX }, radian);
+			ori.first += cenh;
+			ori.second += cenw;
+
+			if (ori.first > 0 && ori.first < height - 1 && ori.second > 0 && ori.second < width - 1) {
+				int x1 = static_cast<int>(ori.second);
+				int y1 = static_cast<int>(ori.first);
+				int x2, y2;
+				if (x1 + 1 >= width) {
+					x2 = width - 1;
+				}
+				else x2 = x1 + 1;
+
+				if (y1 + 1 >= height) {
+					y2 = height - 1;
+				}
+				else y2 = y1 + 1;
+
+				float a = ori.second - x1;
+				float b = ori.first - y1;
+
+
+				newMat.at<uchar>(y, x) = input.at<uchar>(y1, x1) * (1 - a) * (1 - b) +
+					input.at<uchar>(y2, x1) * (1 - a) * b +
+					input.at<uchar>(y1, x2) * (1 - b) * a +
+					input.at<uchar>(y2, x2) * a * b;
 			}
 
 
@@ -252,11 +236,13 @@ void colorotate(Mat input, float degree, float scaleSize)
 	}
 
 	cv::imshow("orig", input);
+	cout << degree << endl;
 	cv::imshow("result", newMat);
 	cv::waitKey(0);
+	//imwrite(path + "result.bmp", newMat);
 
-	//cv::imwrite("C:/Users/woo12/OneDrive/Desktop/cpp/img/result"+(String)to_string(degree)+".bmp", newMat);
 }
+
 void colorScale(Mat input, float size)
 {
 	
