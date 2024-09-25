@@ -4,10 +4,10 @@
 using namespace std;
 using namespace cv;
 
-//String path = "../img";
 int main()
 {
-	
-	cout << "hello opencv" << CV_VERSION << endl;
-
+	cout << 'a';
+	/*Mat img = imread("C:/Users/woo12/OneDrive/Desktop/cpp/img/lecture3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	cv::imshow("ori", img);
+	cv::waitKey(0);*/
 }
