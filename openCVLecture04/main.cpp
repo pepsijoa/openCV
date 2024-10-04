@@ -6,33 +6,61 @@ using namespace cv;
 
 void cornerDetection(Mat img);
 void minNorm(float* map, float max, float min, int size);
+Mat lowPassFilter(Mat img);
 
 string path = "C:/Users/woo12/OneDrive/Desktop/cpp/img/";
 
 int main(void)
 {
-	Mat img = imread(path + "board.png", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat img = imread(path + "desk.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	cornerDetection(img);
+
 }
 
+Mat lowPassFilter(Mat img)
+{
+	Mat output = img.clone();
+	for (int y = 1; y < img.rows-1; y++) {
+		for (int x = 1; x < img.cols-1; x++) {
+
+			float mask = 0;
+			for (int ymask = -1; ymask <= 1; ymask++) {
+				for (int xmask = -1; xmask <= 1; xmask++) {
+					mask += img.at<uchar>(y + ymask, x + xmask);
+				}
+			}
+			mask = mask * 0.111;
+			output.at<uchar>(y, x) = mask;
+		}
+	}
+	return output;
+}
 void cornerDetection(Mat img)
 {	
+	img = lowPassFilter(img);
+
 	int xmask[9]{ -1, -1, -1, 0, 0, 0, 1, 1, 1 };
 	int ymask[9]{ -1, 0, 1, -1, 0, 1, -1, 0, 1 };
+
+	
+
 	int height = img.rows;
 	int width = img.cols;
 
 	float* ix = new float[height * width];
 	float* iy = new float[height * width];
 
-	
-	
+	float* magniSize = new float[height * width];
+	float* degreeSize = new float[height * width];
 
 	float ixmax = 0.0f;
 	float ixmin = 0.0f;
 
 	float iymax = 0.0f;
 	float iymin = 0.0f;
+
+
+	// low pass fiter
 
 	// copy gray img to color img.
 	Mat edgeimg = Mat::zeros(height, width, CV_8UC3);
@@ -43,6 +71,9 @@ void cornerDetection(Mat img)
 			}
 		}
 	}
+	
+	float magniMax = 0.0f;
+	float magniMin = 0.0f;
 
 	for (int y = 1; y < height - 1; y++) {
 		for (int x = 1; x < width - 1; x++) {
@@ -58,12 +89,33 @@ void cornerDetection(Mat img)
 					fy += img.at<uchar>(y + (my - 1), x + (mx - 1)) * ymask[my * 3 + mx] / 255.0;
 				}
 			}
+			
+			//calculate magni
+			magni = sqrt(fx * fx + fy * fy);
+			if (magniMax < magni) magniMax = magni;
+			if (magniMin > magni) magniMin = magni;
+			magniSize[y * width + x] = magni;
+
+			//calgulate degree
+			degree = atan2(fy, fx) * 180.0 / 3.1415926535;
+			if (degree < 0) degree += 180.0;
+			if (magni != 0)
+				degreeSize[y * width + x] = (degree - 1);
+			else
+				degreeSize[y * width + x] = 9999;
+
 
 			ix[y * width + x] = fx;
 			iy[y * width + x] = fy;
 		}
 		
 	}
+
+	//norm magnitude
+	minNorm(magniSize, magniMax, magniMin, height * width);
+
+
+
 
 	float* R = new float[height * width];
 	int* corner = new int[height * width];
@@ -72,7 +124,7 @@ void cornerDetection(Mat img)
 	float maxR = 0.0f;
 	float minR = 0.0f;
 	
-	float th = 15.0f;
+	float th = 2.0f;
 
 	//calculte R
 	for (int y = 1; y < height - 1; y++) {
@@ -102,10 +154,12 @@ void cornerDetection(Mat img)
 		}
 	}
 	
-	minNorm(R, maxR, minR, height * width);
+	//Norm for visualization
+	//minNorm(R, maxR, minR, height * width);
+	
 	
 
-
+	// spot corner visualization
 	Point pcenter;
 	Scalar color(0, 255, 0);
 	for (int y = 1; y < height - 1; y++) {
@@ -121,8 +175,10 @@ void cornerDetection(Mat img)
 	}
 
 	//cv::imwrite(path + to_string(int(th)) + "withcircle.bmp", img);
-	cv::imwrite(path + "cornermap.bmp", edgeimg);
+	cv::imwrite(path + "1cornermap.bmp", edgeimg);
 	
+	delete[] degreeSize;
+	delete[] magniSize;
 	delete[] corner;
 	delete[] ix;
 	delete[] iy;
@@ -134,6 +190,5 @@ void minNorm(float* map, float max, float min, int size)
 	for (int i = 0; i < size; i++)
 	{
 		map[i] = (map[i] - min) / (max - min);
-		map[i] = 255 * map[i];
 	}
 }
