@@ -1,45 +1,68 @@
-#include <iostream>
+#include<bits/stdc++.h>
 
 using namespace std;
 
-class Simple
-{
-public:
-	Simple() { cout << "Simple constructor called!" << endl; }
-	~Simple() { cout << "Simple deconstructor called!" << endl; }
-};
+int vis[1001][1001]{ 0 };
+int board[1001][1001]{ 0 };
 
-void main()
-{
-	multiArray();
-}
+int dx[4]{ 1, 0, -1, 0 };
+int dy[4]{ 0, -1, 0, 1 };
 
-void multiArray()
+int main(void)
 {
-	char** allocate(size_t xDimension, size_t yDimension)
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	int n = 0;
+	int m = 0;
+
+	cin >> m >> n;
+
+	queue<pair<int, int>> Q;
+	for (int row = 0; row < n; row++) {
+		for (int col = 0; col < m; col++) {
+			cin >> board[row][col];
+			if (board[row][col] == 1) {
+				vis[row][col] = 1;
+				Q.push({ row, col });
+			}
+		}
+	}
+
+	while (!Q.empty())
 	{
-		char** myArray {new char*[xDimension] }
-	}
-}
-//객체 할당에 대한 내용, pg 330
-void classAllo()
-{
-	Simple* singleptr{ new Simple[3] };
-	// use
-	delete[]singleptr;
-	singleptr = nullptr;
-
-	const size_t size{ 4 };
-	Simple** mySimplePtrArray{ new Simple * [size] };
-	for (size_t i{ 0 }; i < size; i++) { mySimplePtrArray[i] = new Simple[2]; }
-
-	//use
-
-	for (size_t i{ 0 }; i < size; i++) {
-		delete[] mySimplePtrArray[i];
-		mySimplePtrArray[i] = nullptr;
+		pair<int, int> cur = Q.front(); Q.pop();
+		for (int dir = 0; dir < 4; dir++) {
+			int nx = cur.first + dx[dir];
+			int ny = cur.second + dy[dir];
+			if (nx < 0 || nx > n - 1 || ny < 0 || ny > m - 1) continue;
+			if (vis[nx][ny] || board[nx][ny] != 0) continue;
+			vis[nx][ny] = vis[cur.first][cur.second] + 1;
+			Q.push({ nx,ny });
+		}
 	}
 
-	delete[] mySimplePtrArray;
-	mySimplePtrArray = nullptr;
+	int ans = 1;
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			if (vis[i][j] == 0 && board[i][j] != -1) {
+				ans = -1;
+				break;
+			}
+
+			if (ans < vis[i][j]) {
+				ans = vis[i][j];
+			}
+		}
+		if (ans == -1) break;
+	}
+	if (ans >= 1) cout << ans - 1;
+	else cout << -1;
+
+
+
+
+
+
+
 }
