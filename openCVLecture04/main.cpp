@@ -9,11 +9,9 @@ void minNorm(float* map, float max, float min, int size);
 
 string path = "C:/Users/woo12/OneDrive/Desktop/cpp/img/";
 
-
-
 int main(void)
 {
-	Mat img = imread(path + "apart.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat img = imread(path + "board.png", CV_LOAD_IMAGE_GRAYSCALE);
 	cornerDetection(img);
 }
 
@@ -36,8 +34,16 @@ void cornerDetection(Mat img)
 	float iymax = 0.0f;
 	float iymin = 0.0f;
 
-	Mat edgeimg = Mat::zeros(height, width, CV_8UC1);
-	
+	// copy gray img to color img.
+	Mat edgeimg = Mat::zeros(height, width, CV_8UC3);
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			for (int i = 0; i < 3; i++) {
+				edgeimg.at<Vec3b>(y, x)[i] = img.at<uchar>(y, x);
+			}
+		}
+	}
+
 	for (int y = 1; y < height - 1; y++) {
 		for (int x = 1; x < width - 1; x++) {
 			float fx = 0.0f;
@@ -107,16 +113,16 @@ void cornerDetection(Mat img)
 			if (corner[y * width + x] == 1) {
 				pcenter.x = x;
 				pcenter.y = y;
-				circle(img, pcenter, 1, color, 2, 8, 0);
+				circle(edgeimg, pcenter, 1, color, 1, 8, 0);
 			}
 			
-			edgeimg.at<uchar>(y, x) = R[y * width + x];
+			/*edgeimg.at<uchar>(y, x) = R[y * width + x];*/
 		}
 	}
 
-	cv::imwrite(path + to_string(int(th)) + "withcircle.bmp", img);
-	//cv::imwrite(path + "cornermap.bmp", edgeimg);
-
+	//cv::imwrite(path + to_string(int(th)) + "withcircle.bmp", img);
+	cv::imwrite(path + "cornermap.bmp", edgeimg);
+	
 	delete[] corner;
 	delete[] ix;
 	delete[] iy;
