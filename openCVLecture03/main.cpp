@@ -17,43 +17,44 @@ int main(void)
 	string path = "C:/Users/woo12/OneDrive/Desktop/cpp/img/";
 	/*Mat resize = imread(path + "cat.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	grayScale(resize);*/
-	Mat img1 = imread(path + "lecture3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat img1 = imread(path + "konkuk.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	float* img1histo = edgeDetectionMin(img1);
 	
-	Mat com1 = imread(path + "compare1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	float* com1histo = edgeDetectionMin(com1);
+	//
+	//Mat com1 = imread(path + "compare1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	//float* com1histo = edgeDetectionMin(com1);
 
-	Mat com2 = imread(path + "compare2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	float* com2histo = edgeDetectionMin(com2);
+	//Mat com2 = imread(path + "compare2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	//float* com2histo = edgeDetectionMin(com2);
 
-	//code for output excel
-	std::ofstream file("output.csv");
-	float v1 = 0.0;
-	float v2 = 0.0;
-	float v3 = 0.0;
+	////code for output excel
+	//std::ofstream file("output.csv");
+	//float v1 = 0.0;
+	//float v2 = 0.0;
+	//float v3 = 0.0;
 
-	if (file.is_open()) {
-		file << "v1, v2, v3\n";
-		for (int i = 0; i < 945; i++)
-		{
-			file << img1histo[i] << ',' << com1histo[i] << ',' << com2histo[i] << '\n';
-		}
-		file.close();
-	}
-	
-
-
-	cout << compare(img1histo, com1histo) << endl;
-	cout << compare(img1histo, com2histo) << endl;
+	//if (file.is_open()) {
+	//	file << "v1, v2, v3\n";
+	//	for (int i = 0; i < 945; i++)
+	//	{
+	//		file << img1histo[i] << ',' << com1histo[i] << ',' << com2histo[i] << '\n';
+	//	}
+	//	file.close();
+	//}
+	//
 
 
+	//cout << compare(img1histo, com1histo) << endl;
+	//cout << compare(img1histo, com2histo) << endl;
 
-	delete[] com2histo;
-	delete[] com1histo;
-	delete[] img1histo;
-	
-	imshow("com3", com2);
-	waitKey(0);
+
+
+	//delete[] com2histo;
+	//delete[] com1histo;
+	//delete[] img1histo;
+	//
+	//imshow("com3", com2);
+	//waitKey(0);
 
 	return 0;
 }
@@ -68,8 +69,8 @@ void minNorm(float* map, float max, float min, int size)
 
 float* edgeDetectionMin(Mat img)
 {
-	int xmask[9]{-1, -1, -1, 0, 0, 0, 1, 1, 1};
-	int ymask[9]{ -1, 0, 1, -1, 0, 1, -1, 0, 1 };
+	int xmask[9]{-1, -2, -1, 0, 0, 0, 1, 2, 1};
+	int ymask[9]{ -1, 0, 1, -2, 0, 2, -1, 0, 1 };
 	int height = img.rows;
 	int width = img.cols;
 
@@ -127,123 +128,128 @@ float* edgeDetectionMin(Mat img)
 
 	//magnitude normalization
 	minNorm(map, max, min, height * width);
-
-
 	for (int y = 1; y < height - 1; y++) {
 		for (int x = 1; x < width - 1; x++) {
-			
-			if (degreeMap[y * width + x] != 9999) {
-				int hIndex = 0;
-				int wIndex = 0;
-				int degreeIndex = 0;
-				degreeIndex = (int)(degreeMap[y * width + x] / 20);
-				
-				if (x / 8 == 0) {
-					wIndex = 0;
-					if (y / 8 == 0) {
-						hIndex = 0;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-					else if (y / 8 == heightHistoSize) {
-						hIndex = heightHistoSize - 1;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-					else {
-						hIndex = y / 8;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-						histo[(hIndex - 1) * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-				}
-				else if (x / 8 == widthHistoSize) {
-					wIndex = widthHistoSize - 1;
-					if (y / 8 == 0) {
-						hIndex = 0;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-					else if (y / 8 == heightHistoSize) {
-						hIndex = heightHistoSize - 1;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-					else {
-						hIndex = y / 8;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-						histo[(hIndex - 1) * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-				}
-				else { // width is middle
-					wIndex = x / 8;
-					if (y / 8 == 0) {
-						hIndex = 0;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-						histo[hIndex * widthHistoSize * degreebin +
-							(wIndex - 1) * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-					else if (y / 8 == heightHistoSize) {
-						hIndex = heightHistoSize - 1;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-						histo[hIndex * widthHistoSize * degreebin +
-							(wIndex - 1) * degreebin +
-							degreeIndex] += map[y * width + x];
-					}
-					else { // include 4 blocks
-						hIndex = y / 8;
-						histo[hIndex * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-						histo[(hIndex - 1) * widthHistoSize * degreebin +
-							wIndex * degreebin +
-							degreeIndex] += map[y * width + x];
-						histo[(hIndex - 1) * widthHistoSize * degreebin +
-							(wIndex - 1) * degreebin +
-							degreeIndex] += map[y * width + x];
-						histo[hIndex * widthHistoSize * degreebin +
-							(wIndex - 1) * degreebin +
-							degreeIndex] += map[y * width + x];
-
-					}
-				}
-			}
+			edgeimg.at<uchar>(y, x) = saturate_cast<uchar>(map[y * width + x] * 255);
 		}
 	}
+	imshow("edgeimg", edgeimg);
+	waitKey(0);
+	//for (int y = 1; y < height - 1; y++) {
+	//	for (int x = 1; x < width - 1; x++) {
+	//		
+	//		if (degreeMap[y * width + x] != 9999) {
+	//			int hIndex = 0;
+	//			int wIndex = 0;
+	//			int degreeIndex = 0;
+	//			degreeIndex = (int)(degreeMap[y * width + x] / 20);
+	//			
+	//			if (x / 8 == 0) {
+	//				wIndex = 0;
+	//				if (y / 8 == 0) {
+	//					hIndex = 0;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//				else if (y / 8 == heightHistoSize) {
+	//					hIndex = heightHistoSize - 1;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//				else {
+	//					hIndex = y / 8;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//					histo[(hIndex - 1) * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//			}
+	//			else if (x / 8 == widthHistoSize) {
+	//				wIndex = widthHistoSize - 1;
+	//				if (y / 8 == 0) {
+	//					hIndex = 0;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//				else if (y / 8 == heightHistoSize) {
+	//					hIndex = heightHistoSize - 1;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//				else {
+	//					hIndex = y / 8;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//					histo[(hIndex - 1) * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//			}
+	//			else { // width is middle
+	//				wIndex = x / 8;
+	//				if (y / 8 == 0) {
+	//					hIndex = 0;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						(wIndex - 1) * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//				else if (y / 8 == heightHistoSize) {
+	//					hIndex = heightHistoSize - 1;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						(wIndex - 1) * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//				}
+	//				else { // include 4 blocks
+	//					hIndex = y / 8;
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//					histo[(hIndex - 1) * widthHistoSize * degreebin +
+	//						wIndex * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//					histo[(hIndex - 1) * widthHistoSize * degreebin +
+	//						(wIndex - 1) * degreebin +
+	//						degreeIndex] += map[y * width + x];
+	//					histo[hIndex * widthHistoSize * degreebin +
+	//						(wIndex - 1) * degreebin +
+	//						degreeIndex] += map[y * width + x];
 
-	for (int i = 0; i < heightHistoSize; i++) {
-		for (int j = 0; j < widthHistoSize; j++) {
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
-			
-			float sum = 0.0f;
-			for (int k = 0; k < degreebin; k++) {
-				degreeHis[k] = histo[i * widthHistoSize * degreebin + j * degreebin + k];
-			}
-			sum = sumNorm(degreeHis, 9);
+	//for (int i = 0; i < heightHistoSize; i++) {
+	//	for (int j = 0; j < widthHistoSize; j++) {
 
-			if (sum != 0) {
-				for (int k = 0; k < degreebin; k++) {
-					histo[i * widthHistoSize * degreebin + j * degreebin + k] /= sum;
-				}
-			}
-		}
-	}
+	//		
+	//		float sum = 0.0f;
+	//		for (int k = 0; k < degreebin; k++) {
+	//			degreeHis[k] = histo[i * widthHistoSize * degreebin + j * degreebin + k];
+	//		}
+	//		sum = sumNorm(degreeHis, 9);
+
+	//		if (sum != 0) {
+	//			for (int k = 0; k < degreebin; k++) {
+	//				histo[i * widthHistoSize * degreebin + j * degreebin + k] /= sum;
+	//			}
+	//		}
+	//	}
+	//}
 
 
 

@@ -22,12 +22,12 @@ pair<float, float> rot(pair<int, int>point, float degree);
 int main(void)
 {
 	String path = "C:/Users/woo12/OneDrive/Desktop/cpp/img/";
-	String img = "axis.bmp";
+	String img = "konkuk.bmp";
 	Mat imgColor = imread(path + img, CV_LOAD_IMAGE_COLOR);
 	Mat imgGrey = imread(path + img, CV_LOAD_IMAGE_GRAYSCALE);
 
 	for (int i = 0; i < 360; i++) {
-		colorotate(imgColor, i, 1, 1);
+		colorotate(imgColor, i, 0.5, 1);
 	}
 	//colorotate(imgColor, 18, 1, 1);
 	
@@ -162,11 +162,11 @@ void colorotate(Mat input, float degree, float scaleXSize, float scaleYSize)
 	}
 
 	// 
-	cv::imshow((string)to_string(degree) + "result", newMat);
-	cv::waitKey(0);
+	cv::imshow("result", newMat);
+	cv::waitKey(0);/*
 	cv::imwrite("C:/Users/woo12/OneDrive/Desktop/cpp/img/result"+
 		(String)to_string(degree)+(String)to_string(scaleYSize)+(String)to_string(scaleXSize)+
-			"2.bmp", newMat);
+			"2.bmp", newMat);*/
 }
 
 void rotate(Mat input, float degree, float scaleXSize, float scaleYSize)
@@ -292,10 +292,6 @@ void colorScale(Mat input, float size)
 	imshow("orig", input);
 	imshow("result", newMat);
 	cv::waitKey(0);
-	//imwrite(path + "result.bmp", newMat);
-	//cout << "\nnew Height = " << newHeight;
-	//cout << "\nnew width = " << newWidth;
-
 }
 
 void grayScale()

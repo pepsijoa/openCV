@@ -1,48 +1,30 @@
-﻿#include<opencv2/opencv.hpp>
-#include<iostream>
+﻿#include <opencv2/opencv.hpp>
 
-using namespace std;
+int main() {
+    // 이미지를 읽어옵니다.
+    cv::Mat img1 = cv::imread("C:/Users/woo12/OneDrive/Desktop/cpp/img/desk.jpg");
+    cv::Mat img2 = cv::imread("C:/Users/woo12/OneDrive/Desktop/cpp/img/desk2.jpg");
 
-string path = "C:/Users/woo12/OneDrive/Desktop/cpp/img/";
-int main(void)
-{
-    // 비디오 파일 열기 (또는 웹캠을 사용하려면 0을 입력)
-    cv::VideoCapture cap(path + "desk.mp4"); // 파일 경로 또는 장치 ID 사용
-
-    // 비디오 파일이 열렸는지 확인
-    if (!cap.isOpened()) {
-        std::cout << "Error: Could not open the video file!" << std::endl;
+    // 두 이미지가 올바르게 로드되었는지 확인합니다.
+    if (img1.empty() || img2.empty()) {
+        std::cout << "이미지를 불러올 수 없습니다!" << std::endl;
         return -1;
     }
 
-    // 프레임별로 비디오 처리
-    cv::Mat frame;
-    int frame_count = 0;
+    // 두 이미지의 세로 크기를 맞춥니다.
+    int height = std::max(img1.rows, img2.rows);  // 두 이미지 중 더 큰 세로 크기 선택
+    int totalWidth = img1.cols + img2.cols;  // 두 이미지의 가로 크기 합산
 
-    while (true) {
-        // 비디오에서 한 프레임 읽기
-        bool success = cap.read(frame);
+    // 두 이미지를 붙이기 위한 새로운 이미지 생성 (높이: 최대값, 너비: 두 이미지의 합)
+    cv::Mat combinedImage(height, totalWidth, img1.type());
 
-        // 더 이상 프레임이 없으면 루프 종료
-        if (!success) {
-            std::cout << "End of video stream" << std::endl;
-            break;
-        }
+    // 각 이미지를 결합 이미지의 좌우에 복사
+    img1.copyTo(combinedImage(cv::Rect(0, 0, img1.cols, img1.rows)));  // 왼쪽에 이미지1
+    img2.copyTo(combinedImage(cv::Rect(img1.cols, 0, img2.cols, img2.rows)));  // 오른쪽에 이미지2
 
-        // 프레임 처리 (예: 화면에 표시)
-        cv::imshow("Video Frame", frame);
+    // 창에 결합된 이미지 표시
+    cv::imshow("Combined Image", combinedImage);
+    cv::waitKey(0);  // 키 입력을 기다립니다.
 
-        // 프레임 번호 출력
-        std::cout << "Processing frame: " << frame_count << std::endl;
-        frame_count++;
-
-        // 'q' 키를 누르면 중단
-        if (cv::waitKey(30) == 'q') {
-            break;
-        }
-    }
-
-    // 리소스 해제
-    cap.release();
-    cv::destroyAllWindows();
+    return 0;
 }
